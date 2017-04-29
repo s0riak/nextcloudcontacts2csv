@@ -233,10 +233,10 @@ def write_data_to_csv(data, relevant_categories):
 
 def get_arguments():
     parser = argparse.ArgumentParser(description='This hacky piece extracts contacts from nextcloud and writes them to csv')
-    parser.add_argument('-hn', '-hostname', help='hostname of the host on which the nextcloud database is running', default='')
-    parser.add_argument('-u', '-username', help='username to be used to connect to the database', default='')
-    parser.add_argument('-p', '-password', help='password to be used to connect to the database', default='')
-    parser.add_argument('-n', '-dbname', help='database name to be used to connect to the database', default='')
+    parser.add_argument('-hn', '-hostname', help='hostname of the host on which the nextcloud database is running', required=True)
+    parser.add_argument('-u', '-username', help='username to be used to connect to the database', required=True)
+    parser.add_argument('-p', '-password', help='password to be used to connect to the database', required=True)
+    parser.add_argument('-n', '-dbname', help='database name to be used to connect to the database', required=True)
     parser.add_argument('-c', '-categories', help='the categories/groups to be included in the export', default='')
 
 
