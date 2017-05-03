@@ -83,9 +83,7 @@ def get_dict_from_vcard(vCard):
             while i < len(lines) and lines[i].decode('utf8').startswith(" "):
                 notes = notes + lines[i][1:].decode('utf8').replace("\,", ",").replace("\\n", " ")
                 i = i + 1
-            splittedNotes = notes.split("\;")
-            for index, splittedNote in enumerate(splittedNotes):
-                result["note_" + str(index)] = splittedNote
+            result["notes"] = notes.split("\;")
         if line.startswith("TEL;"):
             if not "phone" in result:
                 result["phone"] = []
@@ -203,10 +201,22 @@ def include_in_export(contact, relevant_categories):
             "contact " + str(contact) + " has categories '" + str(contact["categories"]) + "' not in  '" + str(relevant_category) + "' not in categories")
     return False
 
+def get_max_number_of_notes(data, relevant_categories):
+    number_of_notes = 0
+    for item in data:
+        if include_in_export(item, relevant_categories):
+            if "notes" in item:
+                number_of_notes = max(number_of_notes, len(item["notes"]))
+    return number_of_notes
+
 def write_data_to_csv(data, relevant_categories):
+
     with open('addresses.csv', 'w') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=';',quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csvwriter.writerow(["firstName", "lastName", "birthday", "phoneNumber", "mail", "street", "zipcode", "city", "note_1", "note_2"])
+        header = ["firstName", "lastName", "birthday", "phoneNumber", "mail", "street", "zipcode", "city"]
+        for index in range(0, get_max_number_of_notes(data, relevant_categories)):
+            header.append("note_" + str(index))
+        csvwriter.writerow(header)
         for item in data:
             if include_in_export(item, relevant_categories):
                 try:
@@ -221,12 +231,9 @@ def write_data_to_csv(data, relevant_categories):
                     zipcode = get_preferred_attribute(item, "address", "zip", ["home", "work"])
                     row = [item["firstName"], item["lastName"], birthday, phoneNumber, mail, street, zipcode, city]
                     note = []
-                    for i in range(0,2):
-                        if "note_" + str(i) in item:
-                            note.append(item["note_" + str(i)])
-                        else:
-                            note.append("")
-                    row.extend(note)
+                    if "notes" in item:
+                        for note in item["notes"]:
+                            row.append(note)
                     csvwriter.writerow(row)
                 except KeyError as e:
                     logging.getLogger("main").error("KEYERROR: " + str(e) + " " + str(item))
